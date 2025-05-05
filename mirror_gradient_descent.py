@@ -1,6 +1,7 @@
 import numpy as np
+#import numdifftools as nd
 
-def h(x): # função de entropia negativa
+def negativa_entropia(x): # função de entropia negativa
     n = len(x)
     sum_ = 0
 
@@ -10,40 +11,44 @@ def h(x): # função de entropia negativa
     return  sum_
 
 
-def grad_h(x): # gradiente da entropia negativa (vetor de ln(x_i))
+def grad_negativa_entropia(x): # gradiente da entropia negativa (vetor de ln(x_i))
     return np.log(x)
 
-def inv_grad_h(x): # inversa do gradiente da entropia negativa
+def inv_grad_negativa_entropia(x): # inversa do gradiente da entropia negativa
     return np.exp(x)
 
-def h_2(x): # norma ao quadrado sobre 2
-    return (1/2) * np.linalg.norm(x) ** 2
+def norma_p(x, p = 2): # norma ao quadrado sobre 2
+    return (1/p) * np.linalg.norm(x) ** p
 
-def grad_h_2(x): # o gradiente dá o próprio x
-    return x
+def grad_norma_p(x, p = 2): # o gradiente dá o próprio x
+    return np.sign(x) * (np.abs(x) ** (p - 1))
 
-def inv_grad_h_2(x): # a inversa é o próprio x
-    return x
+def inv_grad_norma_p(x, p = 2): # a inversa é o próprio x
+    return np.sign(x) * (np.abs(x) ** (1 / (p-1)))
 
 
-def mirror_gradient(f, grad_f, inv_grad_h, grad_h, x0):
+def mirror_gradient(grad_f, inv_grad_h, grad_h, x0, eta = 1e-1, epsilon = 1e-4, maxIter = 100000, verbose = False):
 
     xt = x0
 
-    eta = 1e-1
-
-    total = 10000
     i = 0
 
-    while (np.linalg.norm(grad_f(xt)) > 1e-3):
+   
+
+    while (np.linalg.norm(grad_f(xt)) > epsilon):
+
+        x_before = xt
 
         xt = inv_grad_h(grad_h(xt) - eta * grad_f(xt))
 
-        #print(xt)
+        if (np.linalg.norm(x_before -xt) <epsilon): # caso o algoritmo não esteja progredindo
+            return xt
 
-        print(np.linalg.norm(grad_f(xt)))
+        if verbose:
+
+            print(np.linalg.norm(grad_f(xt)))
         i += 1
-        if (i == total):
+        if (i == maxIter):
             break
     
     return xt
